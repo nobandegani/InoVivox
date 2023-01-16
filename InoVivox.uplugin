@@ -1,0 +1,38 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.1",
+	"EngineVersion": "5.1.0",
+	"FriendlyName": "Ino Vivox",
+	"Description": "Vivox integration for UE5",
+	"Category": "Ino Plugins",
+	"CreatedBy": "Inonvation Land",
+	"CreatedByURL": "https://inoland.net",
+	"DocsURL": "http://portal.inoland.net/index.php/knowledge_base/category/1",
+	"MarketplaceURL": "",
+	"SupportURL": "http://portal.inoland.net/index.php/tickets",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": true,
+	"Modules": [
+		{
+			"Name": "InoVivox",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"WhitelistPlatforms": [
+				"Win64",
+				"Mac",
+				"IOS",
+				"Android"
+			],
+			"BlacklistPlatforms": [ "Linux" ]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "VivoxCore",
+			"Enabled": true
+		}
+	]
+}
