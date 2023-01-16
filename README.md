@@ -18,10 +18,20 @@ Attention: for using this plugin you need VivoxCore plugin and also account at V
 
 Feel free to contact us if you have any questions or doubts.
 
-Unreal engine forume link
+PluginLink
+https://nobandegan.com/projects/ino-vivox-plugin/
+
+Unreal engine forum link
+https://forums.unrealengine.com/t/inovivox-ue5-vivox-voice-chat-blueprint-integration/750664
+
+Documentation
+https://portal.inoland.net/index.php/knowledge_base/view/2
+
+Inoland Discord Channel link
+https://discord.gg/4pWBHE7NHE
 
 InoPortal link
 https://portal.inoland.net/
 
-Inoland Discord Channel link
-https://discord.gg/4pWBHE7NHE
+Vivox Developer Portal
+https://developer.vivox.com/
