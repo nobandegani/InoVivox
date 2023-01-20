@@ -223,6 +223,9 @@ int32 UVivoxSubsystem::SignIn(FString InputUsername, FString InputDisplayName, T
 	}
 
 	AccountIds.Add(InputUsername, TempAccountId);
+
+	ILoginSession &MyLoginSession(MyVoiceClient->GetLoginSession(TempAccountId));
+	MyLoginSession.EventStateChanged.AddUObject(this, &UVivoxSubsystem::OnLoginSessionStateChanged, TempAccountId.Name());
 	
 	AsyncTask(IV_Thread_Normal, [this, TempAccountId, Expiration, BindToReceiveDirectMessage, Callback]()
 	{
@@ -237,8 +240,6 @@ int32 UVivoxSubsystem::SignIn(FString InputUsername, FString InputDisplayName, T
 			Callback.ExecuteIfBound(Error);
 		});
 		
-		MyLoginSession.EventStateChanged.AddUObject(this, &UVivoxSubsystem::OnLoginSessionStateChanged, TempAccountId.Name());
-
 		if (BindToReceiveDirectMessage)
 		{
 			MyLoginSession.EventDirectedTextMessageReceived.AddUObject(this, &UVivoxSubsystem::OnDirectedTextMessageReceived, TempAccountId.Name());
@@ -319,6 +320,13 @@ int32 UVivoxSubsystem::JoinChannel(FString InputUserName, FString InputChannelNa
 		return false;
 	}
 	
+	IChannelSession& MyChannelSession(TempLoginSession->GetChannelSession(TempChannelId));
+	MyChannelSession.EventChannelStateChanged.AddUObject(this, &UVivoxSubsystem::OnChannelSessionStateChanged, TempLoginSession->LoginSessionId().Name(),TempChannelId.Name());
+	if (ConnectText)
+	{
+		MyChannelSession.EventTextMessageReceived.AddUObject(this, &UVivoxSubsystem::OnChannelSessionTextMessageReceived, TempLoginSession->LoginSessionId().Name(), TempChannelId.Name());
+	}
+	
 	AsyncTask(IV_Thread_Normal, [this, TempLoginSession, TempChannelId, Expiration, ConnectAudio, ConnectText, SwitchTransmition, Callback]()
 	{
 		IChannelSession& MyChannelSession(TempLoginSession->GetChannelSession(TempChannelId));
@@ -331,14 +339,7 @@ int32 UVivoxSubsystem::JoinChannel(FString InputUserName, FString InputChannelNa
 			UE_LOG(LogVivoxSubsystem, Warning, TEXT("Join channel completed"));
 			Callback.ExecuteIfBound(Error);
 		});
-
-		MyChannelSession.EventChannelStateChanged.AddUObject(this, &UVivoxSubsystem::OnChannelSessionStateChanged, TempLoginSession->LoginSessionId().Name(),TempChannelId.Name());
-
-		if (ConnectText)
-		{
-			MyChannelSession.EventTextMessageReceived.AddUObject(this, &UVivoxSubsystem::OnChannelSessionTextMessageReceived, TempLoginSession->LoginSessionId().Name(), TempChannelId.Name());
-		}
-
+		
 		MyChannelSession.BeginConnect(ConnectAudio, ConnectText, SwitchTransmition, ConnectToken, OnBeginConnectCompleted);
 	});
 
