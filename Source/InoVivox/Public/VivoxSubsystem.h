@@ -7,6 +7,7 @@
 
 #if !DISABLE_VIVOXCORE
 	#include "VivoxCore.h"
+	#include "VivoxCore/Public/ILoginSession.h"
 #endif
 
 #include "Library/VivoxStructLibrary.h"
@@ -15,7 +16,7 @@
 
 
 //BP Dynamic Deligates ----------------------------------------
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(F_IV_M_OnLoginStateChanged, FString, Username, LoginState, LoginState);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(F_IV_M_OnLoginStateChanged, FString, Username, LoginState, LoginStateStatus);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(F_IV_M_OnChannelStateChanged, FString, Username, FString, ChannelName, ConnectionState, ChannelState);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(F_IV_M_OnChannelTextMessageReceived, FString, Username, FString, ChannelName, FString, Text, FString, Sender, FDateTime, RecieveTime);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(F_IV_M_OnDirectTextMessageReceived, FString, Username, FString, Text, FString, Sender, FDateTime, RecieveTime);

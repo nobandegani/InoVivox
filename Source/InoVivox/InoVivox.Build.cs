@@ -2,18 +2,22 @@
 
 using UnrealBuildTool;
 using System.IO;
+using System;
 
 public class InoVivox : ModuleRules
 {
+
 	public InoVivox(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		
-		PublicDefinitions.Add("DISABLE_VIVOXCORE=0");
-		
 		if (Target.Platform == UnrealTargetPlatform.Linux)
 		{
 			PublicDefinitions.Add("DISABLE_VIVOXCORE=1");
+		}
+		else
+		{
+			PublicDefinitions.Add("DISABLE_VIVOXCORE=0");
 		}
 		
 		#if !DISABLE_VIVOXCORE
@@ -33,7 +37,14 @@ public class InoVivox : ModuleRules
 			}
 		);
 		
-		
+		PrivateDependencyModuleNames.AddRange(
+			new string[]
+			{
+				"Slate",
+				"SlateCore",
+				// ... add private dependencies that you statically link with here ...	
+			}
+		);
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
@@ -50,17 +61,6 @@ public class InoVivox : ModuleRules
 			}
 			);
 
-
-		PrivateDependencyModuleNames.AddRange(
-			new string[]
-			{
-				"Slate",
-				"SlateCore"
-				// ... add private dependencies that you statically link with here ...	
-			}
-			);
-		
-		
 		DynamicallyLoadedModuleNames.AddRange(
 			new string[]
 			{
@@ -68,4 +68,6 @@ public class InoVivox : ModuleRules
 			}
 			);
 	}
+	
+	
 }
