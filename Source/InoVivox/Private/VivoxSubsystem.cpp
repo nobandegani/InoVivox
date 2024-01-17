@@ -28,7 +28,12 @@ void UVivoxSubsystem::Deinitialize()
 	if (IsModuleLoaded() && IsInitilized())
 	{
 		MyVoiceClient->Uninitialize();
-		
+		MyVoiceClient = nullptr;
+	}
+	if (IsModuleLoaded())
+	{
+		VivoxCoreModule->ShutdownModule();
+		VivoxCoreModule = nullptr;
 	}
 #endif
 }
@@ -155,23 +160,23 @@ bool UVivoxSubsystem::IsModuleLoaded()
 	return true;
 }
 
-int32 UVivoxSubsystem::Initilize(FString InputEndPoint, FString InputDomain, FString InputIssuer, FString InputSecretKey)
+int32 UVivoxSubsystem::Initilize(FString InputServer, FString InputDomain, FString InputIssuer, FString InputSecretKey)
 {
 	if ( !IsModuleLoaded())
 	{
 		return false;
 	}
 
-	if ( InputEndPoint.IsEmpty() || InputDomain.IsEmpty() || InputIssuer.IsEmpty() || InputSecretKey.IsEmpty() )
+	if ( InputServer.IsEmpty() || InputDomain.IsEmpty() || InputIssuer.IsEmpty() || InputSecretKey.IsEmpty() )
 	{
-		UE_LOG(LogVivoxSubsystem, Warning, TEXT("Make sure EndPoint and Domain and Issuer and SecretKey is set")); 
+		UE_LOG(LogVivoxSubsystem, Warning, TEXT("Make sure server and Domain and Issuer and SecretKey is set")); 
 		return false;
 	}
 
-	EndPoint = InputEndPoint;
+	Server = InputServer;
 	Domain = InputDomain;
-	Issuer = InputIssuer;
-	SecretKey = InputSecretKey;
+	TokenIssuer = InputIssuer;
+	TokenKey = InputSecretKey;
 	
 	MyVoiceClient = &VivoxCoreModule->VoiceClient();
 	return MyVoiceClient->Initialize();
@@ -210,10 +215,10 @@ int32 UVivoxSubsystem::SignIn(FString InputUsername, FString InputDisplayName, T
 	AccountId TempAccountId;
 	if ( InputSpokenLanguages.Max() > 0)
 	{
-		TempAccountId = AccountId(*Issuer, *InputUsername, *Domain, InputDisplayName, InputSpokenLanguages);
+		TempAccountId = AccountId(*TokenIssuer, *InputUsername, *Domain, InputDisplayName, InputSpokenLanguages);
 	}else
 	{
-		TempAccountId = AccountId(*Issuer, *InputUsername, *Domain, InputDisplayName);
+		TempAccountId = AccountId(*TokenIssuer, *InputUsername, *Domain, InputDisplayName);
 	}
 
 	if ( !TempAccountId.IsValid())
@@ -230,13 +235,13 @@ int32 UVivoxSubsystem::SignIn(FString InputUsername, FString InputDisplayName, T
 	AsyncTask(IV_Thread_Normal, [this, TempAccountId, Expiration, BindToReceiveDirectMessage, Callback]()
 	{
 		ILoginSession &MyLoginSession(MyVoiceClient->GetLoginSession(TempAccountId));
-		FString VivoxLoginToken = MyLoginSession.GetLoginToken(SecretKey, Expiration);
+		FString VivoxLoginToken = MyLoginSession.GetLoginToken(TokenKey, Expiration);
 		
 		ILoginSession::FOnBeginLoginCompletedDelegate OnBeginLoginCompleted;
 
 		OnBeginLoginCompleted.BindLambda([this, Callback, &MyLoginSession](VivoxCoreError Error)
 		{
-			UE_LOG(LogVivoxSubsystem, Warning, TEXT("logged in successfully"));
+			UE_LOG(LogVivoxSubsystem, Warning, TEXT("login error code: %i"), Error);
 			Callback.ExecuteIfBound(Error);
 		});
 		
@@ -246,7 +251,7 @@ int32 UVivoxSubsystem::SignIn(FString InputUsername, FString InputDisplayName, T
 			//MyLoginSession.EventSendDirectedTextMessageFailed
 		}
 		
-		MyLoginSession.BeginLogin(EndPoint, VivoxLoginToken, OnBeginLoginCompleted);
+		MyLoginSession.BeginLogin(Server, VivoxLoginToken, OnBeginLoginCompleted);
 	});
 	
 	return 0; 
@@ -300,7 +305,7 @@ int32 UVivoxSubsystem::JoinChannel(FString InputUserName, FString InputChannelNa
 
 	Channel3DProperties TempChannel3DProperties(InputChannel3dProperties.audibleDistance, InputChannel3dProperties.conversationalDistance, InputChannel3dProperties.audioFadeIntensityByDistance, InputChannel3dProperties.audioFadeMode);
 	
-	ChannelId TempChannelId(Issuer, InputChannelName, Domain, InputChannelType, TempChannel3DProperties);
+	ChannelId TempChannelId(TokenIssuer, InputChannelName, Domain, InputChannelType, TempChannel3DProperties);
 	if (!TempChannelId.IsValid())
 	{
 		UE_LOG(LogVivoxSubsystem, Warning, TEXT("ChannelId id not valid, try again and make sure vivox cridentials and input is good"));
@@ -331,7 +336,7 @@ int32 UVivoxSubsystem::JoinChannel(FString InputUserName, FString InputChannelNa
 	{
 		IChannelSession& MyChannelSession(TempLoginSession->GetChannelSession(TempChannelId));
 		
-		FString ConnectToken = MyChannelSession.GetConnectToken(EndPoint, Expiration);
+		FString ConnectToken = MyChannelSession.GetConnectToken(TokenKey, Expiration);
 		IChannelSession::FOnBeginConnectCompletedDelegate OnBeginConnectCompleted;
 		
 		OnBeginConnectCompleted.BindLambda([this, Callback, &MyChannelSession](VivoxCoreError Error)
@@ -603,7 +608,7 @@ int32 UVivoxSubsystem::SendDirectText(FString SenderUsername, FString RecieverUs
 		return false;
 	}
 	
-	AccountId Target = AccountId(Issuer, RecieverUsername, Domain);
+	AccountId Target = AccountId(TokenIssuer, RecieverUsername, Domain);
 	if (!Target.IsValid())
 	{
 		UE_LOG(LogVivoxSubsystem, Warning, TEXT("receiver user its not valid"));

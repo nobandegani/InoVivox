@@ -42,10 +42,10 @@ private:
 	TMap<FString, AccountId> AccountIds;
 	TMap<FString, ChannelId> ChannelIds;
 	
-	FString EndPoint;
+	FString Server;
 	FString Domain;
-	FString Issuer;
-	FString SecretKey;
+	FString TokenIssuer;
+	FString TokenKey;
 	
 	VivoxCoreError GetError(int32 ErrorInt);
 
@@ -128,11 +128,11 @@ public:
 		int32 SendChannelText( FString InputUsername, FString InputChannelName, FString InputText , const F_IV_D_OnBeginLoginCompleted& Callback);
 
 	UFUNCTION(BlueprintCallable, DisplayName = "Send Direct Text Message", category="Vivox Subsystem|Account", meta = (AutoCreateRefTerm = "Callback"))
-	int32 SendDirectText( FString SenderUsername, FString RecieverUsername,  FString InputText,
+		int32 SendDirectText( FString SenderUsername, FString RecieverUsername,  FString InputText,
 const F_IV_D_OnBeginLoginCompleted& Callback);
 
 	UFUNCTION(BlueprintCallable, DisplayName = "Update 3D Positional Channel", category="Vivox Subsystem|Channel")
-	int32 Update3dPositionalChannel( FString InputUsername, FString InputChannelName,
+		int32 Update3dPositionalChannel( FString InputUsername, FString InputChannelName,
 	FVector SpeakerPosition, FVector ListenerPosition, FVector ListenerForwardVector, FVector ListenerUpVector, bool& Updated );
 };
 
